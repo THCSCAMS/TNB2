@@ -9,7 +9,6 @@ $$ | \_/ $$ |\$$$$$$  |$$ |  $$ |$$ /  $$ | $$$$$$  |
 \__|     \__| \______/ \__|  \__|\__|  \__| \______/ 
 ]=]
 
--- Instances: 190 | Scripts: 1 | Modules: 0 | Tags: 0
 local G2L = {};
 
 -- StarterGui.MSR
@@ -2041,7 +2040,7 @@ local script = G2L["20"];
 	local predefinedKeys = {
 		[1280700272] = "REALCYYISABITCHASSNIGGA",
 		[417784003] = "CUMSLAYER422",
-		[0] = "1",
+		[1266218569] = "REALCYYISABITCHASSNIGGA1",
 		[21312313] = "1"
 	}
 	
