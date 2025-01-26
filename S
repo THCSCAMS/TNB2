@@ -430,7 +430,7 @@ G2L["2b"]["ZIndex"] = 4;
 G2L["2b"]["BorderSizePixel"] = 0;
 G2L["2b"]["TextYAlignment"] = Enum.TextYAlignment.Bottom;
 G2L["2b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["2b"]["TextSize"] = 30;
+G2L["2b"]["TextSize"] = 25;
 G2L["2b"]["FontFace"] = Font.new([[rbxasset://fonts/families/Sarpanch.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
 G2L["2b"]["TextColor3"] = Color3.fromRGB(166, 166, 166);
 G2L["2b"]["BackgroundTransparency"] = 1;
@@ -2118,7 +2118,7 @@ local script = G2L["20"];
 			wait(2)
 			LTEXT.Text = "WELCOME, " .. playerUser
 			wait(2)
-			LTEXT.Text = "FUCK REALCY IS A BITCH"
+			LTEXT.Text = "FUCK REALCY THAT NIGGA A BITCH AND HIS MOMMA TOO"
 			wait(5)
 			LSYS.Visible = false
 			LIBRARY.Visible = true
