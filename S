@@ -6,7 +6,7 @@ $$\$$\$$ $$ |\$$$$$$\  $$$$$$$  | \$$$$  / $$$$$$$\
 $$ \$$$  $$ | \____$$\ $$  __$$<  $$  $$<  $$  __$$\ 
 $$ |\$  /$$ |$$\   $$ |$$ |  $$ |$$  /\$$\ $$ /  $$ |
 $$ | \_/ $$ |\$$$$$$  |$$ |  $$ |$$ /  $$ | $$$$$$  |
-\__|     \__| \______/ \__|  \__|\__|  \__| \______/                                                     
+\__|     \__| \______/ \__|  \__|\__|  \__| \______/ 
 ]=]
 
 -- Instances: 190 | Scripts: 1 | Modules: 0 | Tags: 0
@@ -448,8 +448,8 @@ G2L["2c"]["BorderSizePixel"] = 0;
 G2L["2c"]["BackgroundColor3"] = Color3.fromRGB(12, 12, 12);
 G2L["2c"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
 G2L["2c"]["ClipsDescendants"] = true;
-G2L["2c"]["Size"] = UDim2.new(0, 495, 0, 450);
-G2L["2c"]["Position"] = UDim2.new(0.5, 0, 0.49874, 0);
+G2L["2c"]["Size"] = UDim2.new(0, 540, 0, 450);
+G2L["2c"]["Position"] = UDim2.new(0.49968, 0, 0.49874, 0);
 G2L["2c"]["BorderColor3"] = Color3.fromRGB(57, 57, 57);
 G2L["2c"]["Name"] = [[Library]];
 
