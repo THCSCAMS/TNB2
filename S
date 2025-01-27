@@ -7,8 +7,8 @@ $$ \$$$  $$ | \____$$\ $$  __$$<  $$  $$<  $$  __$$\
 $$ |\$  /$$ |$$\   $$ |$$ |  $$ |$$  /\$$\ $$ /  $$ |
 $$ | \_/ $$ |\$$$$$$  |$$ |  $$ |$$ /  $$ | $$$$$$  |
 \__|     \__| \______/ \__|  \__|\__|  \__| \______/ 
-]=]                                                  
-                                                     
+]=]
+
 local G2L = {};
 
 -- StarterGui.MSR
@@ -2027,7 +2027,7 @@ local script = G2L["20"];
 	local KSYS = UI.KeySystem
 	local LSYS = UI.Loading
 	local LIBRARY = UI.Library
-	local playerUser = game.Players.LocalPlayer.UserId
+	local playerUserId = game.Players.LocalPlayer.UserId
 	
 	local UBOX = KSYS.User
 	local KBOX = KSYS.Key
@@ -2038,10 +2038,10 @@ local script = G2L["20"];
 	local cfgPath = "KEYSYSTEM/USEDKEY.cfg"
 	
 	local predefinedKeys = {
-		[1280700272] = "REALCYYISABITCHASSNIGGA",
-		[417784003] = "CUMSLAYER422",
-		[1266218569] = "REALCYYISABITCHASSNIGGA1",
-		[21312313] = "1"
+		[1280700272] = {Key = "REALCYYISABITCHASSNIGGA", User = "MSRX6"},
+		[417784003] = {Key = "CUMSLAYER422", User = "MSR"},
+		[1266218569] = {Key = "REALCYYISABITCHASSNIGGA1", User = "MSRX"},
+		[21312313] = {Key = "1", User = "CustomUser4"}
 	}
 	
 	local usedKeys = {}
@@ -2058,13 +2058,19 @@ local script = G2L["20"];
 		makefolder("KEYSYSTEM")
 	end
 	
-	local function validateKey(playerUserId, key)
-		if predefinedKeys[playerUserId] == key then
-			usedKeys[playerUserId] = key
+	local function validateKey(playerUserId, enteredUser, enteredKey)
+		local userEntry = predefinedKeys[playerUserId]
+	
+		if userEntry and userEntry.Key == enteredKey and userEntry.User == enteredUser then
+			if usedKeys[playerUserId] and usedKeys[playerUserId].Key == enteredKey then
+				return true, "Key already used but accepted again for " .. enteredUser
+			end
+			
+			usedKeys[playerUserId] = {Key = enteredKey, User = enteredUser}
 			writefile(cfgPath, game:GetService("HttpService"):JSONEncode(usedKeys))
-			return true, "Key accepted for " .. playerUserId
+			return true, "Key accepted for " .. enteredUser
 		else
-			return false, "Invalid key."
+			return false, "Invalid key or username."
 		end
 	end
 	
@@ -2104,21 +2110,48 @@ local script = G2L["20"];
 	makeDraggable(LSYS)
 	makeDraggable(LIBRARY)
 	
+	local TweenService = game:GetService("TweenService")
+	
+	local function typeText(label, text, delay)
+		label.Text = ""
+		for i = 1, #text do
+			label.Text = string.sub(text, 1, i)
+			wait(delay or 0.05)
+		end
+	end
+	
+	local function fadeInOut(label, duration)
+		local fadeIn = TweenService:Create(label, TweenInfo.new(duration), {TextTransparency = 0})
+		fadeIn:Play()
+		fadeIn.Completed:Wait()
+	
+		local fadeOut = TweenService:Create(label, TweenInfo.new(duration), {TextTransparency = 1})
+		fadeOut:Play()
+		fadeOut.Completed:Wait()
+	end
+	
+	local function animateLoading(label, text)
+		typeText(label, text, 0.1) 
+		fadeInOut(label, 1)       
+	end
+	
 	LOGIN.MouseButton1Click:Connect(function()
 		local enteredUser = UBOX.Text
 		local enteredPass = KBOX.Text
 	
-		local isValid, message = validateKey(playerUser, enteredPass)
+		local isValid, message = validateKey(playerUserId, enteredUser, enteredPass)
 	
 		if isValid then
 			KSYS.Visible = false
 			LSYS.Visible = true
-			LTEXT.Text = "LOADING"
-			wait(2)
-			LTEXT.Text = "WELCOME, " .. playerUser
-			wait(2)
-			LTEXT.Text = "FUCK REALCY THAT NIGGA A BITCH AND HIS MOMMA TOO"
-			wait(5)
+	
+			typeText(LTEXT, "LOADING", 0.1)
+			wait(1)
+			typeText(LTEXT, "WELCOME, " .. enteredUser, 0.1)
+			wait(1)
+			typeText(LTEXT, "FUCK REALCY AND HIS MOMMA FAT BITCH", 0.1)
+	
+			wait(1)
 			LSYS.Visible = false
 			LIBRARY.Visible = true
 		else
@@ -2129,6 +2162,8 @@ local script = G2L["20"];
 			KBOX.TextColor3 = Color3.fromRGB(255, 255, 255)
 		end
 	end)
+	
+	
 	
 	local LUI = UI.Library
 	local OFFB = LUI.OFFButton
