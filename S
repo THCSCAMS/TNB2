@@ -1989,10 +1989,12 @@ G2L["bb"]["Position"] = UDim2.new(0.455, 0, 0.10332, 0);
 
 -- StarterGui.MSR.Container.Notification.NotiText
 G2L["bc"] = Instance.new("TextLabel", G2L["b9"]);
+G2L["bc"]["TextWrapped"] = true;
 G2L["bc"]["ZIndex"] = 5;
 G2L["bc"]["BorderSizePixel"] = 0;
 G2L["bc"]["TextXAlignment"] = Enum.TextXAlignment.Left;
 G2L["bc"]["TextYAlignment"] = Enum.TextYAlignment.Top;
+G2L["bc"]["TextScaled"] = true;
 G2L["bc"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["bc"]["TextSize"] = 19;
 G2L["bc"]["FontFace"] = Font.new([[rbxasset://fonts/families/Sarpanch.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
@@ -2028,6 +2030,8 @@ local function C_1e()
 local script = G2L["1e"];
 	local version = "1.0.0a"
 	
+	local Players = game:GetService("Players")
+	
 	local UI = script.Parent
 	local KSYS = UI.KeySystem
 	local LSYS = UI.Loading
@@ -2043,9 +2047,9 @@ local script = G2L["1e"];
 	local cfgPath = "KEYSYSTEM/USEDKEY.cfg"
 	
 	local predefinedKeys = {
-		[1280700272] = {Key = "REALCYYISABITCHASSNIGGA", User = "MSRX6"},
+		[1280700272] = {Key = "1", User = "MSRX6"},
+		[1266218569] = {Key = "1", User = "MSRX6"},
 		[417784003] = {Key = "CUMSLAYER422", User = "BUTTPLUG"},
-		[1266218569] = {Key = "REALCYYISABITCHASSNIGGA1", User = "MSRX"},
 		[21312313] = {Key = "1", User = "CustomUser4"}
 	}
 	
@@ -2169,6 +2173,7 @@ local script = G2L["1e"];
 	end)
 	
 	local LUI = UI.Library
+	local NF = UI.Notification
 	local OFFB = LUI.OFFButton
 	local ONB = UI.OnButton
 	local HP = LUI.HomePage
@@ -2255,7 +2260,9 @@ local script = G2L["1e"];
 	--// NPC PAGE 
 	
 	local function toggleDistanceESP(enabled)
-		if enabled then
+		local connections = {}
+	
+		local function updateDistanceLabels()
 			for _, nitty in ipairs(workspace.NokiaCallNPCs:GetChildren()) do
 				if nitty.Name == "Nitty" and nitty:IsA("Model") and nitty:FindFirstChild("HumanoidRootPart") then
 					if not nitty:FindFirstChildOfClass("BillboardGui") then
@@ -2279,14 +2286,12 @@ local script = G2L["1e"];
 					end
 				end
 			end
+		end
 	
-			local connection
-			connection = game:GetService("RunService").RenderStepped:Connect(function()
-				if not enabled then
-					connection:Disconnect()
-					return
-				end
+		if enabled then
+			updateDistanceLabels()
 	
+			connections["RenderStepped"] = game:GetService("RunService").RenderStepped:Connect(function()
 				for _, nitty in ipairs(workspace.NokiaCallNPCs:GetChildren()) do
 					if nitty.Name == "Nitty" and nitty:IsA("Model") and nitty:FindFirstChild("HumanoidRootPart") then
 						local distance = (humanoidRootPart.Position - nitty.HumanoidRootPart.Position).Magnitude
@@ -2297,7 +2302,30 @@ local script = G2L["1e"];
 					end
 				end
 			end)
+	
+			connections["ChildAdded"] = workspace.NokiaCallNPCs.ChildAdded:Connect(function(child)
+				if child.Name == "Nitty" and child:IsA("Model") and child:FindFirstChild("HumanoidRootPart") then
+					updateDistanceLabels()
+				end
+			end)
+	
+			connections["ChildRemoved"] = workspace.NokiaCallNPCs.ChildRemoved:Connect(function(child)
+				if child.Name == "Nitty" then
+					for i, billboard in ipairs(DistanceLabels) do
+						if billboard.Parent == child then
+							table.remove(DistanceLabels, i)
+							if billboard then billboard:Destroy() end
+							break
+						end
+					end
+				end
+			end)
 		else
+			for _, connection in pairs(connections) do
+				connection:Disconnect()
+			end
+			connections = {}
+	
 			for _, billboard in ipairs(DistanceLabels) do
 				if billboard and billboard.Parent then
 					billboard:Destroy()
@@ -2323,19 +2351,24 @@ local script = G2L["1e"];
 			end
 	
 			if closestNitty then
-				local underMapCFrame = humanoidRootPart.CFrame + Vector3.new(0, -25, 0)
-				local tweenInfoUnderMap = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out) 
-				local tweenGoalUnderMap = {CFrame = underMapCFrame}
-				local tweenUnderMap = TweenService:Create(humanoidRootPart, tweenInfoUnderMap, tweenGoalUnderMap)
-				tweenUnderMap:Play()
+				local distance = (humanoidRootPart.Position - closestNitty.HumanoidRootPart.Position).Magnitude
+				local minSpeed, maxSpeed = 10, 25 
+				local travelSpeed = math.clamp(distance / 10, minSpeed, maxSpeed) 
+				local travelTime = distance / travelSpeed 
 	
+				local underMapCFrame = CFrame.new(humanoidRootPart.Position.X, -25, humanoidRootPart.Position.Z)
+				local tweenUnderMap = TweenService:Create(humanoidRootPart, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = underMapCFrame})
+				tweenUnderMap:Play()
 				tweenUnderMap.Completed:Wait()
 	
-				local targetCFrame = closestNitty.HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
-				local tweenInfoToNitty = TweenInfo.new(20, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-				local tweenGoalToNitty = {CFrame = targetCFrame}
-				local tweenToNitty = TweenService:Create(humanoidRootPart, tweenInfoToNitty, tweenGoalToNitty)
+				local underNittyCFrame = CFrame.new(closestNitty.HumanoidRootPart.Position.X, -25, closestNitty.HumanoidRootPart.Position.Z)
+				local tweenToNitty = TweenService:Create(humanoidRootPart, TweenInfo.new(travelTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = underNittyCFrame})
 				tweenToNitty:Play()
+				tweenToNitty.Completed:Wait()
+	
+				local targetCFrame = closestNitty.HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
+				local tweenUp = TweenService:Create(humanoidRootPart, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = targetCFrame})
+				tweenUp:Play()
 			end
 		end
 	end
@@ -2357,11 +2390,22 @@ local script = G2L["1e"];
 		end
 	
 		if farthestStove then
-			local targetCFrame = farthestStove.CFrame + Vector3.new(0, 2, 0)
-			local tweenInfoToStove = TweenInfo.new(20, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-			local tweenGoalToStove = {CFrame = targetCFrame}
-			local tweenToStove = TweenService:Create(humanoidRootPart, tweenInfoToStove, tweenGoalToStove)
-			tweenToStove:Play()
+			local speed = math.clamp(longestDistance / 50, 2, 10)
+			local underStovePosition = farthestStove.Position - Vector3.new(0, 5, 0)
+			local aboveStovePosition = farthestStove.Position + Vector3.new(0, 2, 0)
+	
+			local tweenInfoToUnderStove = TweenInfo.new(speed / 2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			local tweenGoalToUnderStove = {CFrame = CFrame.new(underStovePosition)}
+			local tweenToUnderStove = TweenService:Create(humanoidRootPart, tweenInfoToUnderStove, tweenGoalToUnderStove)
+	
+			local tweenInfoToAboveStove = TweenInfo.new(speed / 2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			local tweenGoalToAboveStove = {CFrame = CFrame.new(aboveStovePosition)}
+			local tweenToAboveStove = TweenService:Create(humanoidRootPart, tweenInfoToAboveStove, tweenGoalToAboveStove)
+	
+			tweenToUnderStove:Play()
+			tweenToUnderStove.Completed:Connect(function()
+				tweenToAboveStove:Play()
+			end)
 		end
 	end
 	
@@ -2384,13 +2428,26 @@ local script = G2L["1e"];
 		end
 	
 		if closestCrate then
-			local targetCFrame = closestCrate.CFrame + Vector3.new(0, 2, 0)
-			local tweenInfoToCrate = TweenInfo.new(math.random(25, 35), Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-			local tweenGoalToCrate = {CFrame = targetCFrame}
-			local tweenToCrate = TweenService:Create(humanoidRootPart, tweenInfoToCrate, tweenGoalToCrate)
-			tweenToCrate:Play()
+			local underCratePosition = closestCrate.Position - Vector3.new(0, 5, 0)
+			local aboveCratePosition = closestCrate.Position + Vector3.new(0, 2, 0)
+	
+			local travelTime = math.clamp(shortestDistance / 50, 2, 10)
+	
+			local tweenInfoToUnderCrate = TweenInfo.new(travelTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			local tweenGoalToUnderCrate = {CFrame = CFrame.new(underCratePosition)}
+			local tweenToUnderCrate = TweenService:Create(humanoidRootPart, tweenInfoToUnderCrate, tweenGoalToUnderCrate)
+	
+			local tweenInfoToAboveCrate = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			local tweenGoalToAboveCrate = {CFrame = CFrame.new(aboveCratePosition)}
+			local tweenToAboveCrate = TweenService:Create(humanoidRootPart, tweenInfoToAboveCrate, tweenGoalToAboveCrate)
+	
+			tweenToUnderCrate:Play()
+			tweenToUnderCrate.Completed:Connect(function()
+				tweenToAboveCrate:Play()
+			end)
 		end
 	end
+	
 	
 	ButtonsN.BoxTP.MouseButton1Click:Connect(function()
 		teleportToClosestCrate()
@@ -2411,13 +2468,26 @@ local script = G2L["1e"];
 		end
 	
 		if closestNPC then
-			local targetCFrame = closestNPC.HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
-			local tweenInfoToNPC = TweenInfo.new(math.random(20, 35), Enum.EasingStyle.Linear, Enum.EasingDirection.Out) 
-			local tweenGoalToNPC = {CFrame = targetCFrame}
-			local tweenToNPC = TweenService:Create(humanoidRootPart, tweenInfoToNPC, tweenGoalToNPC)
-			tweenToNPC:Play()
+			local underNPCPosition = closestNPC.HumanoidRootPart.Position - Vector3.new(0, 5, 0)
+			local aboveNPCPosition = closestNPC.HumanoidRootPart.Position + Vector3.new(0, 2, 0)
+	
+			local travelTime = math.clamp(shortestDistance / 50, 2, 10)
+	
+			local tweenInfoToUnderNPC = TweenInfo.new(travelTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			local tweenGoalToUnderNPC = {CFrame = CFrame.new(underNPCPosition)}
+			local tweenToUnderNPC = TweenService:Create(humanoidRootPart, tweenInfoToUnderNPC, tweenGoalToUnderNPC)
+	
+			local tweenInfoToAboveNPC = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			local tweenGoalToAboveNPC = {CFrame = CFrame.new(aboveNPCPosition)}
+			local tweenToAboveNPC = TweenService:Create(humanoidRootPart, tweenInfoToAboveNPC, tweenGoalToAboveNPC)
+	
+			tweenToUnderNPC:Play()
+			tweenToUnderNPC.Completed:Connect(function()
+				tweenToAboveNPC:Play()
+			end)
 		end
 	end
+	
 	
 	ButtonsN.LaunderTP.MouseButton1Click:Connect(function()
 		teleportToClosestLaunderNPC()
@@ -2470,6 +2540,53 @@ local script = G2L["1e"];
 	ONB.MouseButton1Click:Connect(function()
 		LUI.Visible = true
 		ONB.Visible = false
+	end)
+	
+	--// FEATURES (UI STUFF)
+	
+	local Admins = {2970712713,2970712713,3997136255,68404309,464524512,1273365088,362479631,3297226486,2546178327,934800061,1484288583,3932048204,2754550679,3570371336,1548815946,158689371,158689371,312393381,211745103,879365278,1649005249,1964160876,5046799584,3158613183,22883062,1535042992,2393807480,2348905353,151569424,3062156773}
+	local NotificationHeight = 5
+	local NotificationSpacing = 10
+	
+	local function isAdmin(userId)
+		for _, adminId in ipairs(Admins) do
+			if userId == adminId then
+				return true
+			end
+		end
+		return false
+	end
+	
+	local function showNotification(message)
+		NF.NotiText.Text = message
+		NF.Visible = true
+	
+		NF.Position = UDim2.new(1, 0, 0, #NF.Parent:GetChildren() * (NF.Size.Y.Offset + 10))
+	
+		local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	
+		local targetPosition = UDim2.new(0.95, 0, 0, #NF.Parent:GetChildren() * (NF.Size.Y.Offset + 10))
+		local tweenIn = TweenService:Create(NF, tweenInfo, {Position = targetPosition})
+		tweenIn:Play()
+	
+		task.delay(5, function()
+			local tweenOut = TweenService:Create(NF, tweenInfo, {Position = UDim2.new(1, 0, 0, NF.Position.Y.Offset)})
+			tweenOut:Play()
+			tweenOut.Completed:Wait()
+			NF.Visible = false
+		end)
+	end
+	
+	workspace.NokiaCallNPCs.ChildAdded:Connect(function(child)
+		if child.Name == "Nitty" and child:IsA("Model") and child:FindFirstChild("HumanoidRootPart") then
+			showNotification("Customer has spawned.")
+		end
+	end)
+	
+	Players.PlayerAdded:Connect(function(player)
+		if isAdmin(player.UserId) then
+			showNotification("An admin has joined the game. LEAVE NOW!")
+		end
 	end)
 end;
 task.spawn(C_1e);
